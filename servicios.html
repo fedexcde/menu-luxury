@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Servicios — Guía de Ciudad</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --gold: #c9a84c; --gold-light: #e8d49a; --cream: #f7f3ee; --dark: #1c1c1c; --mid: #5a5a5a; --light: #d8d0c4; }
+    html, body { height: 100%; background: var(--cream); font-family: 'Montserrat', sans-serif; overflow: hidden; }
+    .page { display: grid; grid-template-columns: 28% 1fr; height: 100vh; overflow: hidden; }
+
+    /* Dark sidebar for servicios (contrasting like the main menu card) */
+    .sidebar { position: relative; overflow: hidden; background: #1c1c1c; }
+    .sidebar img { width: 100%; height: 100%; object-fit: cover; opacity: 0.35; filter: saturate(0.5) brightness(0.7); transition: transform 8s ease; }
+    .sidebar:hover img { transform: scale(1.04); }
+    .sidebar-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,10,0.97) 0%, rgba(10,10,10,0.35) 60%, transparent 100%); }
+    .sidebar-top { position: absolute; top: 0; left: 0; right: 0; padding: 22px 24px; z-index: 10; }
+    .back-btn { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.6); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; text-decoration: none; transition: color 0.25s; }
+    .back-btn:hover { color: var(--gold-light); }
+    .back-arrow { width: 22px; height: 22px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: border-color 0.25s; }
+    .back-btn:hover .back-arrow { border-color: var(--gold); }
+    .sidebar-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 28px 28px 32px; z-index: 10; }
+    .sidebar-label { font-size: 8px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; font-weight: 600; margin-bottom: 10px; }
+    .sidebar-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px, 3.5vw, 52px); font-weight: 300; color: #fff; line-height: 1.0; letter-spacing: 1px; }
+    .sidebar-title em { font-style: italic; color: var(--gold-light); }
+    .sidebar-line { width: 32px; height: 1px; background: var(--gold); margin: 16px 0 14px; }
+    .sidebar-desc { font-size: 10px; letter-spacing: 1.5px; color: rgba(255,255,255,0.45); text-transform: uppercase; line-height: 1.7; }
+    .sidebar-count { margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; }
+    .sidebar-count-num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: var(--gold); line-height: 1; }
+    .sidebar-count-label { font-size: 8px; letter-spacing: 2px; color: rgba(255,255,255,0.4); text-transform: uppercase; line-height: 1.4; }
+
+    .content { display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { padding: 16px 28px; border-bottom: 1px solid var(--light); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .topbar-filters { display: flex; gap: 6px; }
+    .filter-pill { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; padding: 5px 14px; border: 1px solid var(--light); color: var(--mid); cursor: pointer; transition: all 0.2s; background: transparent; }
+    .filter-pill:hover, .filter-pill.active { border-color: var(--gold); color: var(--dark); background: rgba(201,168,76,0.07); }
+    .topbar-sort { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; }
+
+    /* Services grid with icons */
+    .list { flex: 1; overflow-y: auto; padding: 20px 28px 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-content: start; }
+    .list::-webkit-scrollbar { width: 3px; }
+    .list::-webkit-scrollbar-thumb { background: var(--light); }
+
+    .servicio {
+      border: 1px solid var(--light); padding: 18px 16px; cursor: pointer;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.2s; background: #fff;
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; overflow: hidden;
+    }
+    .servicio::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+    }
+    .servicio:hover::after { transform: scaleX(1); }
+    .servicio:hover { border-color: var(--gold); box-shadow: 0 2px 14px rgba(201,168,76,0.10); background: #fdfcf9; }
+
+    .servicio-icon { font-size: 22px; line-height: 1; margin-bottom: 2px; }
+    .servicio-cat { font-size: 7px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; font-weight: 600; }
+    .servicio-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(13px, 1.3vw, 17px); font-weight: 600; color: var(--dark); line-height: 1.15; }
+    .servicio-detail { font-size: 8.5px; color: var(--mid); letter-spacing: 0.5px; line-height: 1.55; }
+    .servicio-contact { margin-top: auto; font-size: 8px; letter-spacing: 1px; color: var(--gold); font-weight: 600; }
+
+    .footer-bar { padding: 12px 28px; border-top: 1px solid var(--light); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; background: var(--cream); }
+    .footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 300; color: var(--mid); letter-spacing: 3px; text-transform: uppercase; }
+    .footer-hint { font-size: 8px; letter-spacing: 2px; color: var(--light); text-transform: uppercase; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="sidebar">
+    <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&auto=format&fit=crop" alt="Servicios" onerror="this.style.display='none'"/>
+    <div class="sidebar-overlay"></div>
+    <div class="sidebar-top">
+      <a class="back-btn" href="menu-luxury.html"><span class="back-arrow">←</span> Volver</a>
+    </div>
+    <div class="sidebar-content">
+      <div class="sidebar-label">07 — Servicios</div>
+      <div class="sidebar-title">Dónde<br><em>Encontrar</em></div>
+      <div class="sidebar-line"></div>
+      <div class="sidebar-desc">Información práctica,<br>transporte, salud<br>y servicios turísticos</div>
+      <div class="sidebar-count">
+        <div class="sidebar-count-num">15</div>
+        <div class="sidebar-count-label">servicios<br>esenciales</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="topbar">
+      <div class="topbar-filters">
+        <button class="filter-pill active">Todos</button>
+        <button class="filter-pill">Transporte</button>
+        <button class="filter-pill">Salud</button>
+        <button class="filter-pill">Turismo</button>
+        <button class="filter-pill">Finanzas</button>
+      </div>
+      <span class="topbar-sort">Categoría ↕</span>
+    </div>
+
+    <div class="list">
+
+      <div class="servicio">
+        <div class="servicio-icon">🚕</div>
+        <div class="servicio-cat">Transporte</div>
+        <div class="servicio-name">Taxis & Remises</div>
+        <div class="servicio-detail">Satelitaxi · Uber · Cabify disponibles</div>
+        <div class="servicio-contact">+595 21 311 000</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">🏥</div>
+        <div class="servicio-cat">Salud</div>
+        <div class="servicio-name">Hospital de Clínicas</div>
+        <div class="servicio-detail">Av. Dr. Montero · Emergencias 24h</div>
+        <div class="servicio-contact">+595 21 480 100</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">🏦</div>
+        <div class="servicio-cat">Finanzas</div>
+        <div class="servicio-name">Casas de Cambio</div>
+        <div class="servicio-detail">Palma esq. Chile · Centro · Mejor tipo de cambio</div>
+        <div class="servicio-contact">Centro Histórico</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">✈️</div>
+        <div class="servicio-cat">Transporte</div>
+        <div class="servicio-name">Aeropuerto Silvio Pettirossi</div>
+        <div class="servicio-detail">Luque · 15 km del centro · Shuttle disponible</div>
+        <div class="servicio-contact">+595 21 6454 666</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">🚌</div>
+        <div class="servicio-cat">Transporte</div>
+        <div class="servicio-name">Terminal de Ómnibus</div>
+        <div class="servicio-detail">República Argentina · Bus al interior</div>
+        <div class="servicio-contact">+595 21 551 740</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">🗺️</div>
+        <div class="servicio-cat">Turismo</div>
+        <div class="servicio-name">Oficina de Turismo</div>
+        <div class="servicio-detail">Palma 468 · Maps, guías y circuitos</div>
+        <div class="servicio-contact">+595 21 494 110</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">💊</div>
+        <div class="servicio-cat">Salud</div>
+        <div class="servicio-name">Farmacias de Turno</div>
+        <div class="servicio-detail">Catedral · Avenida · Lider · 24 horas</div>
+        <div class="servicio-contact">Rotativas</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">🚓</div>
+        <div class="servicio-cat">Seguridad</div>
+        <div class="servicio-name">Policía Nacional</div>
+        <div class="servicio-detail">Emergencias · Cobertura toda la ciudad</div>
+        <div class="servicio-contact">911</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">📶</div>
+        <div class="servicio-cat">Conectividad</div>
+        <div class="servicio-name">SIM Turista</div>
+        <div class="servicio-detail">Personal · Claro · Tigo · Aeropuerto y centros comerciales</div>
+        <div class="servicio-contact">Desde Gs. 50.000</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">🏛️</div>
+        <div class="servicio-cat">Turismo</div>
+        <div class="servicio-name">Embajadas</div>
+        <div class="servicio-detail">Argentina · Brasil · Uruguay · EEUU</div>
+        <div class="servicio-contact">Zona Mcal. López</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">⛽</div>
+        <div class="servicio-cat">Transporte</div>
+        <div class="servicio-name">Estaciones de Servicio</div>
+        <div class="servicio-detail">Petropar · Shell · Copetrol · Toda la ciudad</div>
+        <div class="servicio-contact">24 horas</div>
+      </div>
+
+      <div class="servicio">
+        <div class="servicio-icon">📬</div>
+        <div class="servicio-cat">Comunicación</div>
+        <div class="servicio-name">Correo Paraguayo</div>
+        <div class="servicio-detail">Alberdi 120 · Envíos nacionales e internacionales</div>
+        <div class="servicio-contact">+595 21 498 112</div>
+      </div>
+
+    </div>
+
+    <div class="footer-bar">
+      <div class="footer-brand">Guía de Ciudad</div>
+      <div class="footer-hint">Tocar para ver detalle →</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

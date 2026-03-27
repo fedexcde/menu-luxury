@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gastronomía — Guía de Ciudad</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d49a;
+      --cream: #f7f3ee;
+      --dark: #1c1c1c;
+      --mid: #5a5a5a;
+      --light: #d8d0c4;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      font-family: 'Montserrat', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      display: grid;
+      grid-template-columns: 28% 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── LEFT SIDEBAR ── */
+    .sidebar {
+      position: relative;
+      overflow: hidden;
+      background: var(--dark);
+    }
+
+    .sidebar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.55;
+      filter: saturate(0.7);
+      transition: transform 8s ease;
+    }
+
+    .sidebar:hover img { transform: scale(1.04); }
+
+    .sidebar-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(28,28,28,0.92) 0%, rgba(28,28,28,0.3) 60%, transparent 100%);
+    }
+
+    .sidebar-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.75);
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.25s;
+    }
+
+    .back-btn:hover { color: var(--gold-light); }
+
+    .back-arrow {
+      width: 22px;
+      height: 22px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      transition: border-color 0.25s;
+    }
+
+    .back-btn:hover .back-arrow { border-color: var(--gold); }
+
+    .sidebar-content {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 28px 28px 32px;
+      z-index: 10;
+    }
+
+    .sidebar-label {
+      font-size: 8px;
+      letter-spacing: 4px;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(32px, 3.5vw, 52px);
+      font-weight: 300;
+      color: #fff;
+      line-height: 1.0;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-title em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    .sidebar-line {
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+      margin: 16px 0 14px;
+    }
+
+    .sidebar-desc {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase;
+      line-height: 1.7;
+    }
+
+    .sidebar-count {
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-count-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .sidebar-count-label {
+      font-size: 8px;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+
+    /* ── RIGHT CONTENT ── */
+    .content {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top bar */
+    .topbar {
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .topbar-filters {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter-pill {
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 5px 14px;
+      border: 1px solid var(--light);
+      color: var(--mid);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+    }
+
+    .filter-pill:hover, .filter-pill.active {
+      border-color: var(--gold);
+      color: var(--dark);
+      background: rgba(201,168,76,0.07);
+    }
+
+    .topbar-sort {
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--mid);
+      cursor: pointer;
+    }
+
+    /* Scrollable list */
+    .list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .list::-webkit-scrollbar { width: 3px; }
+    .list::-webkit-scrollbar-track { background: transparent; }
+    .list::-webkit-scrollbar-thumb { background: var(--light); }
+
+    /* ── RESTAURANT CARD ── */
+    .resto {
+      display: grid;
+      grid-template-columns: 100px 1fr auto;
+      gap: 0;
+      align-items: stretch;
+      border-bottom: 1px solid var(--light);
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+    }
+
+    .resto:first-child { border-top: 1px solid var(--light); }
+
+    .resto::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--gold);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.3s ease;
+    }
+
+    .resto:hover::before { transform: scaleY(1); }
+    .resto:hover { background: rgba(201,168,76,0.04); }
+
+    .resto-img {
+      width: 100px;
+      height: 82px;
+      object-fit: cover;
+      display: block;
+      filter: saturate(0.85);
+      transition: filter 0.3s, transform 0.3s;
+      flex-shrink: 0;
+    }
+
+    .resto:hover .resto-img {
+      filter: saturate(1);
+      transform: scale(1.02);
+    }
+
+    .resto-body {
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .resto-cat {
+      font-size: 7.5px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .resto-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(15px, 1.5vw, 20px);
+      font-weight: 600;
+      color: var(--dark);
+      letter-spacing: 0.3px;
+      line-height: 1.1;
+      margin-bottom: 5px;
+    }
+
+    .resto-detail {
+      font-size: 9px;
+      color: var(--mid);
+      letter-spacing: 1px;
+      line-height: 1.6;
+    }
+
+    .resto-meta {
+      padding: 14px 18px 14px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .resto-stars {
+      display: flex;
+      gap: 2px;
+      font-size: 9px;
+      color: var(--gold);
+    }
+
+    .resto-price {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--mid);
+      font-weight: 600;
+    }
+
+    .resto-tag {
+      font-size: 7px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      background: rgba(201,168,76,0.12);
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ── FOOTER BAR ── */
+    .footer-bar {
+      padding: 12px 28px;
+      border-top: 1px solid var(--light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      background: var(--cream);
+    }
+
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--mid);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .footer-hint {
+      font-size: 8px;
+      letter-spacing: 2px;
+      color: var(--light);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop" alt="Gastronomía" onerror="this.style.display='none'"/>
+    <div class="sidebar-overlay"></div>
+
+    <div class="sidebar-top">
+      <a class="back-btn" href="menu-luxury.html">
+        <span class="back-arrow">←</span>
+        Volver
+      </a>
+    </div>
+
+    <div class="sidebar-content">
+      <div class="sidebar-label">01 — Gastronomía</div>
+      <div class="sidebar-title">Qué<br><em>Comer</em></div>
+      <div class="sidebar-line"></div>
+      <div class="sidebar-desc">Los mejores restaurantes,<br>bares y experiencias<br>gastronómicas de la ciudad</div>
+      <div class="sidebar-count">
+        <div class="sidebar-count-num">12</div>
+        <div class="sidebar-count-label">lugares<br>seleccionados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT CONTENT -->
+  <div class="content">
+
+    <!-- Top filter bar -->
+    <div class="topbar">
+      <div class="topbar-filters">
+        <button class="filter-pill active">Todos</button>
+        <button class="filter-pill">Restaurantes</button>
+        <button class="filter-pill">Bares</button>
+        <button class="filter-pill">Cafeterías</button>
+        <button class="filter-pill">Parrillas</button>
+      </div>
+      <span class="topbar-sort">Ordenar ↕</span>
+    </div>
+
+    <!-- List -->
+    <div class="list">
+
+      <div class="resto">
+        <img class="resto-img" src="https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=300&auto=format&fit=crop" alt="Tierra"/>
+        <div class="resto-body">
+          <div class="resto-cat">Cocina de autor</div>
+          <div class="resto-name">Tierra</div>
+          <div class="resto-detail">Av. España 2150 · Abierto 12:00 – 23:00</div>
+        </div>
+        <div class="resto-meta">
+          <div class="resto-stars">★★★★★</div>
+          <div class="resto-price">$$$</div>
+          <div class="resto-tag">Destacado</div>
+        </div>
+      </div>
+
+      <div class="resto">
+        <img class="resto-img" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300&auto=format&fit=crop" alt="La Morada"/>
+        <div class="resto-body">
+          <div class="resto-cat">Parrilla & Carnes</div>
+          <div class="resto-name">La Morada</div>
+          <div class="resto-detail">Gral. Díaz 670 · Abierto 11:30 – 22:30</div>
+        </div>
+        <div class="resto-meta">
+          <div class="resto-stars">★★★★☆</div>
+          <div class="resto-price">$$</div>
+        </div>
+      </div>
+
+      <div class="resto">
+        <img class="resto-img" src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=300&auto=format&fit=crop" alt="Café Dorado"/>
+        <div class="resto-body">
+          <div class="resto-cat">Café & Desayunos</div>
+          <div class="resto-name">Café Dorado</div>
+          <div class="resto-detail">Palma 349 · Abierto 07:00 – 21:00</div>
+        </div>
+        <div class="resto-meta">
+          <div class="resto-stars">★★★★★</div>
+          <div class="resto-price">$</div>
+          <div class="resto-tag">Recomendado</div>
+        </div>
+      </div>
+
+      <div class="resto">
+        <img class="resto-img" src="https://images.unsplash.com/photo-1484659619207-9165d119dafe?w=300&auto=format&fit=crop" alt="Bistró 14"/>
+        <div class="resto-body">
+          <div class="resto-cat">Bistró Europeo</div>
+          <div class="resto-name">Bistró 14</div>
+          <div class="resto-detail">Eligio Ayala 1400 · Abierto 18:00 – 23:30</div>
+        </div>
+        <div class="resto-meta">
+          <div class="resto-stars">★★★★☆</div>
+          <div class="resto-price">$$$</div>
+        </div>
+      </div>
+
+      <div class="resto">
+        <img class="resto-img" src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=300&auto=format&fit=crop" alt="Sakura"/>
+        <div class="resto-body">
+          <div class="resto-cat">Cocina Japonesa</div>
+          <div class="resto-name">Sakura</div>
+          <div class="resto-detail">Mcal. López 4050 · Abierto 12:00 – 22:00</div>
+        </div>
+        <div class="resto-meta">
+          <div class="resto-stars">★★★★★</div>
+          <div class="resto-price">$$$</div>
+          <div class="resto-tag">Nuevo</div>
+        </div>
+      </div>
+
+      <div class="resto">
+        <img class="resto-img" src="https://images.unsplash.com/photo-1574096079513-d8259312b785?w=300&auto=format&fit=crop" alt="Mercado del Puerto"/>
+        <div class="resto-body">
+          <div class="resto-cat">Mercado Gastronómico</div>
+          <div class="resto-name">Mercado del Puerto</div>
+          <div class="resto-detail">Costanera Norte · Abierto 09:00 – 22:00</div>
+        </div>
+        <div class="resto-meta">
+          <div class="resto-stars">★★★★☆</div>
+          <div class="resto-price">$$</div>
+        </div>
+      </div>
+
+      <div class="resto">
+        <img class="resto-img" src="https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=300&auto=format&fit=crop" alt="Bar Palermo"/>
+        <div class="resto-body">
+          <div class="resto-cat">Bar & Cocktails</div>
+          <div class="resto-name">Bar Palermo</div>
+          <div class="resto-detail">Yegros 510 · Abierto 18:00 – 02:00</div>
+        </div>
+        <div class="resto-meta">
+          <div class="resto-stars">★★★★☆</div>
+          <div class="resto-price">$$</div>
+          <div class="resto-tag">Top Bar</div>
+        </div>
+      </div>
+
+      <div class="resto">
+        <img class="resto-img" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&auto=format&fit=crop" alt="Fuego & Leña"/>
+        <div class="resto-body">
+          <div class="resto-cat">Parrilla & Cerveza Artesanal</div>
+          <div class="resto-name">Fuego & Leña</div>
+          <div class="resto-detail">Brasilia 1200 · Abierto 12:00 – 23:00</div>
+        </div>
+        <div class="resto-meta">
+          <div class="resto-stars">★★★★★</div>
+          <div class="resto-price">$$</div>
+          <div class="resto-tag">Popular</div>
+        </div>
+      </div>
+
+    </div><!-- /list -->
+
+    <!-- Footer -->
+    <div class="footer-bar">
+      <div class="footer-brand">Guía de Ciudad</div>
+      <div class="footer-hint">Tocar para ver detalle →</div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /page -->
+</body>
+</html>

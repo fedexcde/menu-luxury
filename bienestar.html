@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bienestar — Guía de Ciudad</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --gold: #c9a84c; --gold-light: #e8d49a; --cream: #f7f3ee; --dark: #1c1c1c; --mid: #5a5a5a; --light: #d8d0c4; }
+    html, body { height: 100%; background: var(--cream); font-family: 'Montserrat', sans-serif; overflow: hidden; }
+    .page { display: grid; grid-template-columns: 28% 1fr; height: 100vh; overflow: hidden; }
+
+    .sidebar { position: relative; overflow: hidden; background: #2a1a0a; }
+    .sidebar img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; filter: saturate(0.7); transition: transform 8s ease; }
+    .sidebar:hover img { transform: scale(1.04); }
+    .sidebar-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(30,15,5,0.95) 0%, rgba(30,15,5,0.3) 60%, transparent 100%); }
+    .sidebar-top { position: absolute; top: 0; left: 0; right: 0; padding: 22px 24px; z-index: 10; }
+    .back-btn { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.75); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; text-decoration: none; transition: color 0.25s; }
+    .back-btn:hover { color: var(--gold-light); }
+    .back-arrow { width: 22px; height: 22px; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: border-color 0.25s; }
+    .back-btn:hover .back-arrow { border-color: var(--gold); }
+    .sidebar-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 28px 28px 32px; z-index: 10; }
+    .sidebar-label { font-size: 8px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; font-weight: 600; margin-bottom: 10px; }
+    .sidebar-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px, 3.5vw, 52px); font-weight: 300; color: #fff; line-height: 1.0; letter-spacing: 1px; }
+    .sidebar-title em { font-style: italic; color: var(--gold-light); }
+    .sidebar-line { width: 32px; height: 1px; background: var(--gold); margin: 16px 0 14px; }
+    .sidebar-desc { font-size: 10px; letter-spacing: 1.5px; color: rgba(255,255,255,0.55); text-transform: uppercase; line-height: 1.7; }
+    .sidebar-count { margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; }
+    .sidebar-count-num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: var(--gold); line-height: 1; }
+    .sidebar-count-label { font-size: 8px; letter-spacing: 2px; color: rgba(255,255,255,0.5); text-transform: uppercase; line-height: 1.4; }
+
+    .content { display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { padding: 16px 28px; border-bottom: 1px solid var(--light); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .topbar-filters { display: flex; gap: 6px; }
+    .filter-pill { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; padding: 5px 14px; border: 1px solid var(--light); color: var(--mid); cursor: pointer; transition: all 0.2s; background: transparent; }
+    .filter-pill:hover, .filter-pill.active { border-color: var(--gold); color: var(--dark); background: rgba(201,168,76,0.07); }
+    .topbar-sort { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; }
+
+    .list { flex: 1; overflow-y: auto; padding: 20px 28px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-content: start; }
+    .list::-webkit-scrollbar { width: 3px; }
+    .list::-webkit-scrollbar-thumb { background: var(--light); }
+
+    .spa {
+      border: 1px solid var(--light); overflow: hidden; cursor: pointer;
+      transition: border-color 0.25s, box-shadow 0.25s; background: #fff;
+    }
+    .spa:hover { border-color: var(--gold); box-shadow: 0 4px 20px rgba(201,168,76,0.12); }
+    .spa-img-wrap { overflow: hidden; }
+    .spa-img { width: 100%; height: 100px; object-fit: cover; display: block; filter: saturate(0.75); transition: filter 0.3s, transform 0.4s; }
+    .spa:hover .spa-img { filter: saturate(1); transform: scale(1.04); }
+    .spa-body { padding: 13px 14px 10px; }
+    .spa-cat { font-size: 7.5px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+    .spa-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(14px, 1.4vw, 18px); font-weight: 600; color: var(--dark); line-height: 1.1; margin-bottom: 5px; }
+    .spa-detail { font-size: 9px; color: var(--mid); letter-spacing: 0.5px; line-height: 1.6; }
+    .spa-footer { padding: 9px 14px; border-top: 1px solid var(--light); display: flex; align-items: center; justify-content: space-between; }
+    .spa-hours { font-size: 8px; letter-spacing: 1px; color: var(--mid); }
+    .spa-badge { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 8px; background: rgba(201,168,76,0.12); color: var(--gold); font-weight: 600; }
+    .spa-price { font-size: 8px; letter-spacing: 1px; color: var(--mid); font-weight: 600; }
+
+    .footer-bar { padding: 12px 28px; border-top: 1px solid var(--light); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; background: var(--cream); }
+    .footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 300; color: var(--mid); letter-spacing: 3px; text-transform: uppercase; }
+    .footer-hint { font-size: 8px; letter-spacing: 2px; color: var(--light); text-transform: uppercase; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="sidebar">
+    <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&auto=format&fit=crop" alt="Bienestar" onerror="this.style.display='none'"/>
+    <div class="sidebar-overlay"></div>
+    <div class="sidebar-top">
+      <a class="back-btn" href="menu-luxury.html"><span class="back-arrow">←</span> Volver</a>
+    </div>
+    <div class="sidebar-content">
+      <div class="sidebar-label">06 — Bienestar</div>
+      <div class="sidebar-title">Dónde<br><em>Cuidarte</em></div>
+      <div class="sidebar-line"></div>
+      <div class="sidebar-desc">Spas, centros de<br>bienestar, yoga<br>y medicina estética</div>
+      <div class="sidebar-count">
+        <div class="sidebar-count-num">8</div>
+        <div class="sidebar-count-label">centros<br>seleccionados</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="topbar">
+      <div class="topbar-filters">
+        <button class="filter-pill active">Todos</button>
+        <button class="filter-pill">Spa</button>
+        <button class="filter-pill">Yoga</button>
+        <button class="filter-pill">Gym</button>
+        <button class="filter-pill">Estética</button>
+      </div>
+      <span class="topbar-sort">Precio ↕</span>
+    </div>
+
+    <div class="list">
+
+      <div class="spa">
+        <div class="spa-img-wrap">
+          <img class="spa-img" src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=500&auto=format&fit=crop" alt="Spa Palmaroga"/>
+        </div>
+        <div class="spa-body">
+          <div class="spa-cat">Spa de Lujo · Hotel</div>
+          <div class="spa-name">Spa Palmaroga</div>
+          <div class="spa-detail">Gral. Díaz 761<br>Masajes, aromaterapia, piscina</div>
+        </div>
+        <div class="spa-footer">
+          <div class="spa-hours">09:00 – 21:00</div>
+          <div class="spa-badge">Premium</div>
+        </div>
+      </div>
+
+      <div class="spa">
+        <div class="spa-img-wrap">
+          <img class="spa-img" src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=500&auto=format&fit=crop" alt="Zen Studio"/>
+        </div>
+        <div class="spa-body">
+          <div class="spa-cat">Yoga & Meditación</div>
+          <div class="spa-name">Zen Studio</div>
+          <div class="spa-detail">Mcal. Estigarribia 3400<br>Hatha, Vinyasa y Yin Yoga</div>
+        </div>
+        <div class="spa-footer">
+          <div class="spa-hours">06:00 – 20:00</div>
+          <div class="spa-price">Gs. 80.000/mes</div>
+        </div>
+      </div>
+
+      <div class="spa">
+        <div class="spa-img-wrap">
+          <img class="spa-img" src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=500&auto=format&fit=crop" alt="Bodytech"/>
+        </div>
+        <div class="spa-body">
+          <div class="spa-cat">Gimnasio Premium</div>
+          <div class="spa-name">Bodytech Asunción</div>
+          <div class="spa-detail">Av. Mcal. López 4200<br>Equipos de última generación</div>
+        </div>
+        <div class="spa-footer">
+          <div class="spa-hours">05:30 – 23:00</div>
+          <div class="spa-price">Gs. 250.000/mes</div>
+        </div>
+      </div>
+
+      <div class="spa">
+        <div class="spa-img-wrap">
+          <img class="spa-img" src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=500&auto=format&fit=crop" alt="Beauté"/>
+        </div>
+        <div class="spa-body">
+          <div class="spa-cat">Centro de Estética</div>
+          <div class="spa-name">Beauté Lounge</div>
+          <div class="spa-detail">Tte. Fariña 864<br>Tratamientos faciales y corporales</div>
+        </div>
+        <div class="spa-footer">
+          <div class="spa-hours">09:00 – 20:00</div>
+          <div class="spa-badge">Recomendado</div>
+        </div>
+      </div>
+
+      <div class="spa">
+        <div class="spa-img-wrap">
+          <img class="spa-img" src="https://images.unsplash.com/photo-1455026733626-d2d31efe4976?w=500&auto=format&fit=crop" alt="Natura Spa"/>
+        </div>
+        <div class="spa-body">
+          <div class="spa-cat">Spa Natural</div>
+          <div class="spa-name">Natura Spa & Wellness</div>
+          <div class="spa-detail">Av. Molas López 2100<br>Termas, barro y hierbas locales</div>
+        </div>
+        <div class="spa-footer">
+          <div class="spa-hours">10:00 – 21:00</div>
+          <div class="spa-badge">Natural</div>
+        </div>
+      </div>
+
+      <div class="spa">
+        <div class="spa-img-wrap">
+          <img class="spa-img" src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500&auto=format&fit=crop" alt="CrossFit"/>
+        </div>
+        <div class="spa-body">
+          <div class="spa-cat">Entrenamiento Funcional</div>
+          <div class="spa-name">CrossFit Asunción</div>
+          <div class="spa-detail">Brasilia 1180<br>Clases grupales, coaching personal</div>
+        </div>
+        <div class="spa-footer">
+          <div class="spa-hours">06:00 – 21:00</div>
+          <div class="spa-price">Gs. 300.000/mes</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bar">
+      <div class="footer-brand">Guía de Ciudad</div>
+      <div class="footer-hint">Tocar para ver detalle →</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
